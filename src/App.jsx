@@ -1,5 +1,8 @@
 import { useState, useMemo, useRef } from "react";
-import { Search, X, Plus, ShoppingBag, ChevronDown, Camera, Heart } from "lucide-react";
+import { Search, X, Plus, ShoppingBag, ChevronDown, Camera, Heart, LogIn, LogOut } from "lucide-react";
+import { useAuth } from "./auth/AuthProvider.jsx";
+import AuthModal from "./auth/AuthModal.jsx";
+import { inputStyle, Field } from "./ui.jsx";
 
 const FONTS = `
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Libre+Franklin:wght@400;500;600&display=swap');
@@ -175,6 +178,10 @@ export default function App() {
   const [wishlist, setWishlist] = useState([]);
   const [checkoutItem, setCheckoutItem] = useState(null);
   const [payment, setPayment] = useState({ name: "", number: "", expiry: "", cvc: "" });
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const { user, profile, signOut } = useAuth();
+  const sellerName = profile?.username || user?.email?.split("@")[0] || "You";
 
   const paymentMissing = !payment.name
     ? "Add the name on the card"
@@ -293,7 +300,7 @@ export default function App() {
       description: form.description,
       hp: 70 + Math.floor(Math.random() * 60),
       price: Number(form.price),
-      seller: "You",
+      seller: sellerName,
       mine: true,
       photo: form.photo,
     };
@@ -373,11 +380,32 @@ export default function App() {
             )}
           </button>
           <button
-            onClick={() => setSellOpen(true)}
+            onClick={() => (user ? setSellOpen(true) : setAuthOpen(true))}
             style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFB000", color: "#1A1200", fontWeight: 600, fontFamily: "Rajdhani, sans-serif", fontSize: 15, border: "none", borderRadius: 10, padding: "9px 16px", cursor: "pointer" }}
           >
             <Plus size={16} /> Sell a card
           </button>
+          {user ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 600, fontSize: 15, color: "#cfe9e4" }}>
+                {sellerName}
+              </span>
+              <button
+                onClick={signOut}
+                title="Sign out"
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid rgba(255,255,255,0.18)", color: "#F5F3EE", fontWeight: 600, fontFamily: "Rajdhani, sans-serif", fontSize: 15, borderRadius: 10, padding: "9px 12px", cursor: "pointer" }}
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setAuthOpen(true)}
+              style={{ display: "flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid rgba(255,255,255,0.18)", color: "#F5F3EE", fontWeight: 600, fontFamily: "Rajdhani, sans-serif", fontSize: 15, borderRadius: 10, padding: "9px 16px", cursor: "pointer" }}
+            >
+              <LogIn size={16} /> Sign in
+            </button>
+          )}
         </div>
         {view === "market" && (
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 20px 14px", display: "flex", gap: 8, overflowX: "auto" }}>
@@ -758,6 +786,14 @@ export default function App() {
         </div>
       )}
 
+      {/* Auth */}
+      {authOpen && (
+        <AuthModal
+          onClose={() => setAuthOpen(false)}
+          onSignedIn={() => showToast("Signed in")}
+        />
+      )}
+
       {/* Toast */}
       {toast && (
         <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", background: "#1B1B22", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 10, padding: "10px 18px", fontSize: 14, zIndex: 50 }}>
@@ -768,22 +804,3 @@ export default function App() {
   );
 }
 
-const inputStyle = {
-  width: "100%",
-  background: "#1B1B22",
-  border: "1px solid rgba(255,255,255,0.12)",
-  borderRadius: 8,
-  padding: "9px 10px",
-  fontSize: 14,
-  color: "#F5F3EE",
-  outline: "none",
-};
-
-function Field({ label, children }) {
-  return (
-    <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <span style={{ fontSize: 12.5, color: "#8B8B95" }}>{label}</span>
-      {children}
-    </label>
-  );
-}
