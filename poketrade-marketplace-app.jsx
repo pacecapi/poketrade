@@ -304,7 +304,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: "100%", background: "linear-gradient(180deg, #084F47 0%, #052824 55%, #03130F 100%)", color: "#F5F3EE", fontFamily: "Libre Franklin, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #084F47 0%, #052824 55%, #03130F 100%)", color: "#F5F3EE", fontFamily: "Libre Franklin, sans-serif" }}>
       <style>{FONTS}{`
         .card-face:hover { transform: translateY(-3px); }
         select, input { color-scheme: dark; }
